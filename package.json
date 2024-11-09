@@ -13,6 +13,7 @@
   "license": "ISC",
   "main": "./dist/use-validate.umd.js",
   "module": "./dist/use-validate.es.js",
+  "types": "./src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/use-validate.es.js",
@@ -20,8 +21,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "dev": "vite",
@@ -36,7 +36,8 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "vite-plugin-dts": "^4.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
