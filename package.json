@@ -13,11 +13,12 @@
   "license": "ISC",
   "main": "./dist/use-validate.umd.js",
   "module": "./dist/use-validate.es.js",
-  "types": "./src/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/use-validate.es.js",
-      "require": "./dist/use-validate.umd.js"
+      "require": "./dist/use-validate.umd.js",
+       "types": "./dist/src/index.d.ts"
     }
   },
   "files": [
