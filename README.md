@@ -1,50 +1,94 @@
-# React + TypeScript + Vite
+# Máscaras e validação de Input e Select
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma forma fácil de adicionar validação e máscaras nos seus inputs.
 
-Currently, two official plugins are available:
+Máscaras dispoíveis:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- CPF(`cpf`): `000.000.000-00`
+- CNPJ(`cnpj`): `00.000.000/0000-00`
+- CPF E CNPJ(`cpf-cnpj`): `000.000.000-00 ou 00.000.000/0000-00` essa máscara se adapta de acordo com o valor digitado.
+- TELEFONE(`phone`): `(00) 0 0000-0000`
+- NOME(`name`): `Nome Sobrenome de Nome`
+- NÚMERO DE CARTÃO DE CRÉDITO(`card-number`): `0000 0000 0000 000
+- DATA DE VALIDADE DE CARTÃO DE CRÉDITO(`card-data`): `00/00`
+- PLACA DE CARRO(`plate`): `AAA-0000`
+- CHASSI DE CARRO(`chassi`): `00000-00000-00000-00`
 
-## Expanding the ESLint configuration
+## Como usar
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Para começar a validar seus inputs, primeiro você deve adicionar o `<ValidationProvider>` em volta de seus inputs, para isso, existe duas maneiras:
 
-- Configure the top-level `parserOptions` property like this:
+- Adcionar o `<ValidationProvider>` em volta do componente que contém seus inputs:
 
 ```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+function App() {
+  return (
+    <>
+      <ValidationProvider>
+        <PageLogin />
+      </ValidationProvider>
+
+      <PageRegister />
+    </>
+  )
+}
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+- Como alternativa você pode colocar o `<ValidationProvider>` diretamente em volta dos inputs:
 
 ```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+function LoginPage() {
+  return (
+    <div>
+      <ValidationProvider>
+        {
+          () =>
+            <div>
+              <input/>
+            </div>
+        }
+      </ValidationProvider>
+    </div>
+  )
+}
+```
+## Register, trigger e errors
+O `<ValidationProvider>` vai expor 3 propriedade:
+- `register`: é uma função que você pode usar para registrar seus inputs.
+- `trigger`: é uma função que você pode usar para disparar a validação de seus inputs.
+- `errors`: é um objeto que contém os erros de validação de seus inputs.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+Observação: O `trigger` é disparado quando os seguintes eventos são disparados: `onBlur` e `onChange`.
+
+- Se o `<ValidationProvider>` estiver em volta de seu componente, então você deve chamar o `useValidation` para acessar as propriedades:
+
+```js
+function PageLogin() {
+  const { errors, register, trigger } = useValidation()
+
+  return (
+    <div>
+    {/* ... */}
+    </div>
+  )
+}
+```
+
+- Se o `<ValidationProvider>` estiver em volta de seus inputs, então você acessará as propriedades assim:
+
+```js
+function LoginPage() {
+  return (
+    <div>
+      <ValidationProvider>
+        {
+          ({ register, trigger, errors }) =>
+            <div>
+              <input/>
+            </div>
+        }
+      </ValidationProvider>
+    </div>
+  )
+}
 ```

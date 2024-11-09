@@ -28,9 +28,12 @@ type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
 };
 
 interface ValidationProviderProps {
-    children: (data: ValidationContext) => JSX.Element;
+    children: (data: ValidationContext) => JSX.Element ;
 }
 
+interface ValidationProviderElementProps {
+    children: React.ReactNode;
+}
 
 interface ValidationContext {
     register: TypeRegister;
@@ -208,7 +211,7 @@ const MESSAGES = {
     minLength: "deve ter no mínimo {minLength} caracteres.",
 }
 
-const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationProviderProps>(
+const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationProviderProps | ValidationProviderElementProps>(
     ({ children }, ref) => {
         const inputRefs = useRef<{ [key: string]: React.RefObject<HTMLInputElement | HTMLSelectElement> }>({});
         const refOptions = useRef<{ [key: string]: Options | undefined }>({});
@@ -403,7 +406,7 @@ const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationP
 
         return (
             <ValidationContext.Provider value={{ register, errors, trigger, resetErros }}>
-                {children({ register, errors, trigger, resetErros })}
+                {typeof children != 'function' ? children : children({ register, errors, trigger, resetErros })}
             </ValidationContext.Provider>
         );
     });
