@@ -11,11 +11,17 @@
   ],
   "author": "kenero",
   "license": "ISC",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/use-validate.umd.js",
+  "module": "./dist/use-validate.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/use-validate.es.js",
+      "require": "./dist/use-validate.umd.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "dev": "vite",
@@ -24,12 +30,17 @@
     "preview": "vite preview",
     "deploy": "npm version patch && npm publish"
   },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
