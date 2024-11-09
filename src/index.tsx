@@ -13,6 +13,7 @@ interface Options {
     nameAndLastName?: boolean
     required?: boolean
     nameOptional?: string
+    minLength?: number
     mask?: "cpf" | "date" | "phone" | "card-number" | "card-data" | "phone" | "name" | "cpf-cnpj" | "cnpj" | "plate" | "chassi"
 }
 
@@ -25,6 +26,11 @@ type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
     onBlur: (e: React.ChangeEvent<T>) => void;
     onChange: (e: React.ChangeEvent<T>) => void;
 };
+
+interface ValidationProviderProps {
+    children: (data: ValidationContext) => JSX.Element;
+}
+
 
 interface ValidationContext {
     register: TypeRegister;
@@ -44,25 +50,6 @@ const ValidationContext = createContext<ValidationContext>({
     errors: {} as ErrosValidation
 });
 
-interface ValidationProviderProps {
-    children: (data: ValidationContext) => JSX.Element;
-    /*  ref?: React.MutableRefObject<ValidationContext> */
-}
-
-
-const MESSAGES: { [key: string]: string } = {
-    required: "é obrigatório.",
-    cpf: "está incorreto.",
-    cnpj: "está incorreto.",
-    nameAndLastName: "digite seu nome completo."
-}
-
-const ERRO_TYPE = {
-    required: "required",
-    cpf: "cpf",
-    cnpj: "cnpj",
-    nameAndLastName: "nameAndLastName"
-}
 
 const MASK: { [key: string]: (value: string) => string } = {
     cpf: (value: string): string => {
@@ -127,7 +114,6 @@ const MASK: { [key: string]: (value: string) => string } = {
 
         return value;
     },
-
     name: (value: string): string => {
 
         const palavras = value.split(' ').map((palavra) => {
@@ -203,45 +189,38 @@ const MASK: { [key: string]: (value: string) => string } = {
     }
 };
 
+const DEFAULT_PROPS: { [key: string]: Options } = {
+    plate: {
+        mask: 'plate',
+        minLength: 8
+    },
+    chassi: {
+        mask: 'chassi',
+        minLength: 20
+    }
+}
+
+const MESSAGES = {
+    required: "é obrigatório.",
+    cpf: "está incorreto.",
+    cnpj: "está incorreto.",
+    nameAndLastName: "digite seu nome completo.",
+    minLength: "deve ter no mínimo {minLength} caracteres.",
+}
 
 const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationProviderProps>(
     ({ children }, ref) => {
-        const refs = useRef<{ [key: string]: React.RefObject<HTMLInputElement | HTMLSelectElement> }>({});
+        const inputRefs = useRef<{ [key: string]: React.RefObject<HTMLInputElement | HTMLSelectElement> }>({});
         const refOptions = useRef<{ [key: string]: Options | undefined }>({});
 
         const [errors, setErrors] = useState<ErrosValidation>({});
 
-        const validationAll = (id: string, value: string) => {
-            let _err = false
-            let msg = ""
-            if (!value) {
-                msg = message(id, ERRO_TYPE.required)
-                _err = true
-            }
-            else if (refOptions.current[id]?.cpf && value && !validaCPF(value)) {
-                msg = message(id, ERRO_TYPE.cpf)
-                _err = true
-            }
-            else if (refOptions.current[id]?.nameAndLastName && value && !validaNameAndLastName(value)) {
-                msg = message(id, ERRO_TYPE.nameAndLastName)
-                _err = true
-            }
-            else {
-                _err = false
-            }
+        const message = (key: string, errorType: keyof typeof MESSAGES) => {
+            const currentInputOptions = refOptions.current[key]
+            const msg = MESSAGES[errorType].replace("{minLength}", String(currentInputOptions?.minLength));
 
-
-            setErrors(err => ({
-                ...err, [id]: _err ? {
-                    error: true,
-                    message: msg
-                } : undefined
-            }));
-
-
+            return `${capitalizeFirstLetter(currentInputOptions?.nameOptional || key)} ${msg}`
         }
-
-        const message = (key: string, errorType: string) => (`${capitalizeFirstLetter(refOptions.current[key]?.nameOptional || key)} ${MESSAGES[errorType]}`)
 
         const register = <T extends HTMLInputElement | HTMLSelectElement>(id: string, onChange: (e: React.ChangeEvent<T>) => void, options: Options = { required: true }): {
             ref: React.RefObject<T>;
@@ -249,19 +228,23 @@ const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationP
             onChange: (e: React.ChangeEvent<T>) => void;
         } => {
             const inputRef = React.createRef<T>();
-            refs.current[id] = inputRef;
-            refOptions.current[id] = options
+            inputRefs.current[id] = inputRef;
+
+            const defaultOptions = options.mask ? { ...DEFAULT_PROPS[options.mask] } : {}
+
+            refOptions.current[id] = { ...defaultOptions, ...options }
             return {
                 ref: inputRef,
                 onBlur: (e: React.ChangeEvent<T>) => {
-                    //console.log(options?.required, id, e.target.value)
-                    if (options?.required) {
-                        validationAll(id, e.target.value)
+                    if (options?.required && e) {
+                        //validationAll(id, e.target.value)
+                        trigger([id])
                     }
                 },
                 onChange: (e: React.ChangeEvent<T>) => {
                     if (options?.required) {
-                        validationAll(id, e.target.value)
+                        //validationAll(id, e.target.value)
+                        trigger([id])
                     }
                     if (options?.mask) {
                         e.target.value = MASK[options?.mask](e.target.value)
@@ -275,45 +258,57 @@ const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationP
             let isValid = true;
             const newErrors: ErrosValidation = { ...errors };
 
-            if (!keys) {
-                keys = Object.keys(refs.current)
-            }
-            //console.log(keys, refs.current, Object.keys(refs.current))
-            keys.forEach(key => {
-                const value = refs.current[key]?.current?.value;
 
-                if (refs.current[key]?.current) {
+            if (!keys) {
+                keys = Object.keys(inputRefs.current)
+            }
+
+            keys.forEach(key => {
+                const currentInputOptions = refOptions.current[key]
+                const currentInputRef = inputRefs.current[key]?.current
+
+                if (currentInputRef) {
+                    const value = currentInputRef?.value;
                     if (!value) {
                         newErrors[key] = {
                             error: true,
-                            message: message(key, ERRO_TYPE.required)
+                            message: message(key, "required")
                         };
                         isValid = false;
                     }
-                    if (refOptions.current[key]?.cpf) {
+                    if (currentInputOptions?.cpf) {
                         if (value && !validaCPF(value)) {
                             newErrors[key] = {
                                 error: true,
-                                message: message(key, ERRO_TYPE.cpf)
+                                message: message(key, "cpf")
                             };
                             isValid = false;
                         }
                     }
-                    if (refOptions.current[key]?.cnpj) {
+                    if (currentInputOptions?.cnpj) {
                         if (value && value.length < 18) {
                             newErrors[key] = {
                                 error: true,
-                                message: message(key, ERRO_TYPE.cnpj)
+                                message: message(key, "cnpj")
                             };
                             isValid = false;
                         }
                     }
-                    if (refOptions.current[key]?.nameAndLastName) {
+                    if (currentInputOptions?.nameAndLastName) {
                         if (value && !validaNameAndLastName(value)) {
                             newErrors[key] = {
                                 error: true,
-                                message: message(key, ERRO_TYPE.nameAndLastName)
+                                message: message(key, "nameAndLastName")
                             };
+                            isValid = false;
+                        }
+                    }
+                    if (currentInputOptions?.minLength) {
+                        if (value.length < currentInputOptions?.minLength) {
+                            newErrors[key] = {
+                                error: true,
+                                message: message(key, "minLength")
+                            }
                             isValid = false;
                         }
                     }
@@ -388,7 +383,7 @@ const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationP
             const newErrors: ErrosValidation = { ...errors };
 
             if (!keys) {
-                keys = Object.keys(refs.current)
+                keys = Object.keys(inputRefs.current)
             }
 
             keys.forEach(key => {
