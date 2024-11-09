@@ -1,7 +1,25 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "compilerOptions": {
+    "declaration": true,                // Gera arquivos .d.ts
+    "declarationDir": "./dist",         // Define o diretório para os arquivos .d.ts
+    "moduleResolution": "node",         // Resolução de módulos para Node.js
+    "esModuleInterop": true,            // Para interop com módulos ES
+    "strict": true,                     // Ativa a checagem de tipos mais rigorosa
+    "skipLibCheck": true,               // Ignora checagem de bibliotecas
+    "isolatedModules": true,            // Habilita módulos isolados para compilar
+    "target": "ESNext",                 // Define o alvo para o ES moderno
+    "noEmit": false,                    // Permite a emissão de arquivos (mesmo que apenas .d.ts)
+    "emitDeclarationOnly": true,        // Emite apenas arquivos de declaração .d.ts
+    "module": "ESNext",                 // Usa módulos ESNext
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], // Definir as bibliotecas
+    "jsx": "react-jsx",                 // JSX para React
+    "allowJs": true,                    // Permitir arquivos JavaScript             // Ignorar checagem de tipos em bibliotecas
+    "noUnusedLocals": true,             // Erro para variáveis não usadas
+    "noUnusedParameters": true,         // Erro para parâmetros não usados
+    "noFallthroughCasesInSwitch": true, // Evitar fallthrough em switch
+    "noUncheckedSideEffectImports": true, // Evitar importações com efeitos colaterais
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src"],         // Inclui apenas o arquivo src/index.tsx             // Inclui a pasta src para compilação
+  "exclude": ["node_modules", "dist"]  // Exclui node_modules e dist da compilação
 }

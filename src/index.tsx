@@ -7,7 +7,7 @@ interface ErrosValidation {
     } | undefined | null;
 }
 
-export interface Options {
+interface Options {
     cpf?: boolean
     cnpj?: boolean
     nameAndLastName?: boolean
@@ -16,7 +16,7 @@ export interface Options {
     mask?: "cpf" | "date" | "phone" | "card-number" | "card-data" | "phone" | "name" | "cpf-cnpj" | "cnpj" | "plate" | "chassi"
 }
 
-export type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
+type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
     id: string,
     onChange: (e: React.ChangeEvent<T>) => void,
     options?: Options
@@ -26,7 +26,7 @@ export type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
     onChange: (e: React.ChangeEvent<T>) => void;
 };
 
-export interface ValidationContext {
+interface ValidationContext {
     register: TypeRegister;
     trigger: (keys?: string[]) => boolean;
     resetErros: (keys?: string[]) => void;
@@ -204,7 +204,7 @@ const MASK: { [key: string]: (value: string) => string } = {
 };
 
 
-export const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationProviderProps>(
+const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationProviderProps>(
     ({ children }, ref) => {
         const refs = useRef<{ [key: string]: React.RefObject<HTMLInputElement | HTMLSelectElement> }>({});
         const refOptions = useRef<{ [key: string]: Options | undefined }>({});
@@ -413,8 +413,11 @@ export const ValidationProvider = forwardRef<ValidationContext | undefined, Vali
         );
     });
 
-export function useValidation() {
-    return useContext(ValidationContext)
-}
+const useValidation = () => useContext(ValidationContext)
+
+// dist/index.d.ts
+
+export type { ErrosValidation, Options, TypeRegister, ValidationContext };
+export { ValidationProvider, useValidation };
 
 

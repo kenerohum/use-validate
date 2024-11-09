@@ -7,24 +7,20 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.tsx',
-      name: 'UseValidate',
-      fileName: (format) => `use-validate.${format}.js`,
+      name: '@kenero/use-validate',
+      fileName: "index",
     },
     rollupOptions: {
-      output: [
-        {
-          format: 'es',            // Formato ES (módulo ECMAScript)
-          dir: 'dist',             // Diretório onde os arquivos serão gerados
-          entryFileNames: 'use-validate.es.js', // Nome do arquivo de saída ESM
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
         },
-        {
-          format: 'umd',           // Formato UMD
-          dir: 'dist',             // Diretório de saída
-          entryFileNames: 'use-validate.umd.js', // Nome do arquivo de saída UMD
-          name: 'UseValidate',     // Nome global do pacote
-        },
-      ],
+      },
     },
   },
-  plugins: [react(), dts()],
+  plugins: [react(), dts({
+    include: ["src/index.tsx"]
+  })],
 })
