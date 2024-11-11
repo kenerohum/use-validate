@@ -112,10 +112,25 @@ function PageRegister() {
   )
 }
 
+function LoginPage() {
+  return (
+    <div>
+      <ValidationProvider>
+        {
+          () =>
+            <div>
+              <input/>
+            </div>
+        }
+      </ValidationProvider>
+    </div>
+  )
+}
+
 function PageLogin() {
   const { errors, register, trigger } = useValidation()
   const [cpf, setPhone] = useState("")
-  
+
   return (
     <div>
       <div style={{ marginBottom: 10 }}>
