@@ -30,7 +30,7 @@ type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
 };
 
 interface ValidationProviderProps {
-    children: (data: ValidationContext) => JSX.Element ;
+    children: (data: ValidationContext) => JSX.Element;
 }
 
 interface ValidationProviderElementProps {
@@ -263,67 +263,64 @@ const ValidationProvider = forwardRef<ValidationContext | undefined, ValidationP
             let isValid = true;
             const newErrors: ErrosValidation = { ...errors };
 
-
             if (!keys) {
-                keys = Object.keys(inputRefs.current)
+                keys = Object.keys(inputRefs.current);
             }
 
             keys.forEach(key => {
-                const currentInputOptions = refOptions.current[key]
-                const currentInputRef = inputRefs.current[key]?.current
+                const currentInputOptions = refOptions.current[key];
+                const currentInputRef = inputRefs.current[key]?.current;
+
+                // por padrão, considera sem erro
+                let fieldError: { error: boolean; message: string } | null = null;
 
                 if (currentInputRef) {
-                    const value = currentInputRef?.value;
-                    if (!value) {
-                        newErrors[key] = {
-                            error: true,
-                            message: message(key, "required")
-                        };
-                        isValid = false;
+                    const raw = currentInputRef.value ?? '';
+                    const value = typeof raw === 'string' ? raw.trim() : raw;
+
+                    // required
+                    if (currentInputOptions?.required && !value) {
+                        fieldError = { error: true, message: message(key, 'required') };
                     }
-                    if (currentInputOptions?.cpf) {
+
+                    // cpf
+                    if (!fieldError && currentInputOptions?.cpf) {
                         if (value && !validaCPF(value)) {
-                            newErrors[key] = {
-                                error: true,
-                                message: message(key, "cpf")
-                            };
-                            isValid = false;
+                            fieldError = { error: true, message: message(key, 'cpf') };
                         }
                     }
-                    if (currentInputOptions?.cnpj) {
+
+                    // cnpj (a sua regra atual é comprimento; mantenho para não mudar comportamento)
+                    if (!fieldError && currentInputOptions?.cnpj) {
                         if (value && value.length < 18) {
-                            newErrors[key] = {
-                                error: true,
-                                message: message(key, "cnpj")
-                            };
-                            isValid = false;
+                            fieldError = { error: true, message: message(key, 'cnpj') };
                         }
                     }
-                    if (currentInputOptions?.nameAndLastName) {
+
+                    // nome e sobrenome
+                    if (!fieldError && currentInputOptions?.nameAndLastName) {
                         if (value && !validaNameAndLastName(value)) {
-                            newErrors[key] = {
-                                error: true,
-                                message: message(key, "nameAndLastName")
-                            };
-                            isValid = false;
+                            fieldError = { error: true, message: message(key, 'nameAndLastName') };
                         }
                     }
-                    if (currentInputOptions?.minLength) {
-                        if (value.length < currentInputOptions?.minLength) {
-                            newErrors[key] = {
-                                error: true,
-                                message: message(key, "minLength")
-                            }
-                            isValid = false;
+
+                    // minLength
+                    if (!fieldError && currentInputOptions?.minLength) {
+                        if (value.length < currentInputOptions.minLength) {
+                            fieldError = { error: true, message: message(key, 'minLength') };
                         }
                     }
                 }
 
+                // aplica o resultado para o campo (limpa se estiver ok)
+                newErrors[key] = fieldError;
+                if (fieldError) isValid = false;
             });
 
             setErrors(newErrors);
             return isValid;
         };
+
 
         function validaCPF(cpf: string): boolean {
             cpf = cpf.replace(/\D/g, ''); // Remove caracteres não numéricos
