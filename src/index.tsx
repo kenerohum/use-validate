@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useState, useContext, useRef, forwardRef } from 'react';
 
 interface ErrosValidation {
