@@ -1,5 +1,4 @@
-import React from 'react';
-
+import { default as React } from 'react';
 interface ErrosValidation {
     [key: string]: {
         error: boolean;
@@ -12,7 +11,6 @@ interface Options {
     nameAndLastName?: boolean;
     required?: boolean;
     nameOptional?: string;
-    minLength?: number;
     mask?: "cpf" | "date" | "phone" | "card-number" | "card-data" | "phone" | "name" | "cpf-cnpj" | "cnpj" | "plate" | "chassi";
 }
 type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(id: string, onChange: (e: React.ChangeEvent<T>) => void, options?: Options) => {
@@ -20,12 +18,6 @@ type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(id: string,
     onBlur: (e: React.ChangeEvent<T>) => void;
     onChange: (e: React.ChangeEvent<T>) => void;
 };
-interface ValidationProviderProps {
-    children: (data: ValidationContext) => JSX.Element;
-}
-interface ValidationProviderElementProps {
-    children: React.ReactNode;
-}
 interface ValidationContext {
     register: TypeRegister;
     trigger: (keys?: string[]) => boolean;
@@ -33,7 +25,10 @@ interface ValidationContext {
     errors: ErrosValidation;
 }
 declare const ValidationContext: React.Context<ValidationContext>;
-declare const ValidationProvider: React.ForwardRefExoticComponent<(ValidationProviderProps | ValidationProviderElementProps) & React.RefAttributes<ValidationContext | undefined>>;
+interface ValidationProviderProps {
+    children: (data: ValidationContext) => JSX.Element;
+}
+declare const ValidationProvider: React.ForwardRefExoticComponent<ValidationProviderProps & React.RefAttributes<ValidationContext | undefined>>;
 declare const useValidation: () => ValidationContext;
-
-export { type ErrosValidation, type Options, type TypeRegister, ValidationContext, ValidationProvider, useValidation };
+export type { ErrosValidation, Options, TypeRegister, ValidationContext };
+export { ValidationProvider, useValidation };
