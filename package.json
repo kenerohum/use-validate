@@ -1,6 +1,6 @@
 {
   "name": "@kenero/use-validate",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "type": "module",
   "description": "Uma forma fácil de validar inputs e aplicar várias mascaras como CPF, CNPJ, Data, Telefone, etc.",
   "keywords": [
