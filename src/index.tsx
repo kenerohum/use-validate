@@ -16,7 +16,7 @@ interface Options {
     required?: boolean
     nameOptional?: string
     minLength?: number
-    mask?: "cpf" | "date" | "phone" | "card-number" | "card-data" | "phone" | "name" | "cpf-cnpj" | "cnpj" | "plate" | "chassi"
+    mask?: "cpf" | "phone" | "card-number" | "card-data" | "phone" | "name" | "cpf-cnpj" | "cnpj" | "plate" | "chassi" | "cep"
 }
 
 type TypeRegister = <T extends HTMLInputElement | HTMLSelectElement>(
@@ -56,11 +56,10 @@ const ValidationContext = createContext<ValidationContext>({
 });
 
 
-const MASK: { [key: string]: (value: string) => string } = {
+const MASK: { [key in NonNullable<Options['mask']>]: (value: string) => string } = {
     cpf: (value: string): string => {
         const numericValue = value.replace(/\D/g, ''); // Remove caracteres não numéricos
 
-        // Divide o valor em três partes usando grupos de regex
         let part1 = '';
         let part2 = '';
         let part3 = '';
@@ -191,7 +190,21 @@ const MASK: { [key: string]: (value: string) => string } = {
             // Formato Mercosul AAA1A23
             return `${value.slice(0, 3)}-${value.slice(3, 7)}`;
         }
-    }
+    },
+    cep: (value: string): string => {
+        // Remove tudo que não for número
+        const numbers = value.replace(/[^\d]/g, '');
+
+        // Limita a 8 dígitos (CEP no formato XXXXX-XXX)
+        if (numbers.length > 8) return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
+
+        // Aplica máscara conforme a quantidade de dígitos
+        if (numbers.length <= 5) {
+            return numbers; // ainda não chegou na parte do hífen
+        } else {
+            return `${numbers.slice(0, 5)}-${numbers.slice(5)}`;
+        }
+    },
 };
 
 const DEFAULT_PROPS: { [key: string]: Options } = {
